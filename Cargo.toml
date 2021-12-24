@@ -1,10 +1,25 @@
 [package]
 name = "libcrypto-rs"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 signature = "1"
-serde = "1"
+ring = "0"
+openssl = "0"
+ed25519-dalek = "1"
+libsecp256k1 = { version = "0.7" }
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+
+[dependencies.rand7]
+package = "rand"
+version = "0.7"
+
+[dependencies.rand8]
+package = "rand"
+version = "0.8"
