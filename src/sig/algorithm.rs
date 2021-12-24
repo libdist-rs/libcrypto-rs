@@ -57,7 +57,8 @@ impl Algorithm {
                                     .map_err(|e| format!("Failed to convert private key to PEM: {}", e))?;
                 PrivateKey::RSA(RSAPrivateKey(
                     ring::signature::RsaKeyPair::from_der(&rsa_key)
-                        .map_err(|e| format!("Failed to create an RSA Private key: {}", e))?
+                        .map_err(|e| format!("Failed to create an RSA Private key: {}", e))?,
+                    rsa_key
                 ))
             },
             Algorithm::ED25519 => {

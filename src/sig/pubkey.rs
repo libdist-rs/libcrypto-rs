@@ -1,10 +1,13 @@
 use crate::{ED25519PublicKey, Hash, NetworkObject, RSAPublicKey, SECP256K1PublicKey, Signature};
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum PublicKey {
     RSA(RSAPublicKey),
     ED25519(ED25519PublicKey),
     SECP256K1(SECP256K1PublicKey),
 }
+
 
 impl PublicKey
 {

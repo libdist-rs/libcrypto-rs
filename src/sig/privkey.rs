@@ -1,7 +1,8 @@
 use ring::signature::KeyPair;
+use serde::{Serialize, Deserialize};
 use crate::{ED25519PrivateKey, ED25519PublicKey, Hash, NetworkObject, PublicKey, RSAPrivateKey, RSAPublicKey, SECP256K1PrivateKey, SECP256K1PublicKey, Signature};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum PrivateKey {
     RSA(RSAPrivateKey),
     ED25519(ED25519PrivateKey),

@@ -12,6 +12,9 @@ openssl = "0"
 ed25519-dalek = "1"
 libsecp256k1 = { version = "0.7" }
 
+[dev-dependencies]
+bincode = "1"
+
 [dependencies.serde]
 version = "1"
 features = ["derive"]
