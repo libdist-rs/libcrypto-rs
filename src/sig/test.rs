@@ -2,16 +2,17 @@
 mod test {
     use std::error::Error;
     use crate::{Algorithm, NetworkObject, PrivateKey, PublicKey};
+    use serde::{Serialize, Deserialize};
 
-    #[derive(Debug)]
+    #[derive(Debug, Serialize, Deserialize)]
     struct Data (Vec<u8>);
     impl NetworkObject for Data {
-        fn to_bytes(&self) -> Vec<u8> {
-            self.0.clone()
+        fn to_bytes(&self) -> Result<Vec<u8>, String> {
+            bincode::serialize(self).map_err(|e| e.to_string())
         }
 
-        fn from_bytes(data: &[u8]) -> Self {
-            Self{ 0: data.to_vec() }
+        fn from_bytes(data: &[u8]) -> Result<Self, String> {
+            bincode::deserialize(data).map_err(|e| e.to_string())
         }
     }
 

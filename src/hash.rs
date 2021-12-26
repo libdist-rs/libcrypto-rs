@@ -24,7 +24,7 @@ impl<D> From<&D> for Hash<D>
 where D: NetworkObject
 {
     fn from(data: &D) -> Self {
-        let bytes = data.to_bytes();
+        let bytes = data.to_bytes().expect("Failed to serialize");
         Self{
             _tp: PhantomData,
             data: sha256(& bytes),
