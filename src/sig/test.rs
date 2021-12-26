@@ -6,13 +6,11 @@ mod test {
     #[derive(Debug)]
     struct Data (Vec<u8>);
     impl NetworkObject for Data {
-        type Object = Data;
-
         fn to_bytes(&self) -> Vec<u8> {
             self.0.clone()
         }
 
-        fn from_bytes(data: &[u8]) -> <Self as NetworkObject>::Object {
+        fn from_bytes(data: &[u8]) -> Self {
             Self{ 0: data.to_vec() }
         }
     }
