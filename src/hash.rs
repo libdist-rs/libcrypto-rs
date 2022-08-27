@@ -1,41 +1,18 @@
-use std::marker::PhantomData;
-use std::ops::Deref;
-use openssl::sha::sha256;
-use serde::{Serialize, Deserialize};
-use crate::NetworkObject;
+use sha2::{Digest, Sha256};
+use serde::Serialize;
 
-/// A hash object is a wrapper around the a data byte array
-/// that is type-aware.
-///
-/// ADITHYA: This prevents a ton of bugs that arise because we hash X, but verify against Y.
-#[derive(Serialize,Deserialize,Debug)]
-pub struct Hash<D> {
-    _tp: PhantomData<D>,
-    data: [u8; 32],
-}
+pub const HASH_SIZE:usize = 32;
 
-impl<D> AsRef<[u8]> for Hash<D> {
-    fn as_ref(&self) -> &[u8] {
-        &self.data[..]
-    }
-}
+pub type Hash = [u8; HASH_SIZE];
 
-impl<D> From<&D> for Hash<D>
-where D: NetworkObject
-{
-    fn from(data: &D) -> Self {
-        let bytes = data.to_bytes().expect("Failed to serialize");
-        Self{
-            _tp: PhantomData,
-            data: sha256(& bytes),
-        }
-    }
-}
+pub const EMPTY_HASH:Hash = [0 as u8; 32];
 
-impl<D> Deref for Hash<D> {
-    type Target = [u8];
+pub fn do_hash(bytes: &[u8]) -> Hash {
+    let hash = Sha256::digest(bytes);
+    return hash.into();
+} 
 
-    fn deref(&self) -> &Self::Target {
-        &self.data
-    }
+pub fn ser_and_hash(obj: &impl Serialize) -> Hash {
+    let serialized_bytes = bincode::serialize(obj).unwrap();
+    return do_hash(&serialized_bytes);
 }
