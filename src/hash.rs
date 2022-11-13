@@ -30,6 +30,12 @@ impl<T> PartialOrd for Hash<T> {
     }
 }
 
+impl<T> Ord for Hash<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.inner.cmp(&other.inner)
+    }
+}
+
 impl<T> Hash<T> {
     pub const EMPTY_HASH: Hash<T> = Hash::<T>{
         inner: [0 as u8; HASH_SIZE], 
