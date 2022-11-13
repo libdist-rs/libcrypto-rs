@@ -4,10 +4,30 @@ use serde::{Serialize, Deserialize};
 
 const HASH_SIZE: usize = 32;
 
-#[derive(Hash, PartialEq, Default, Eq, Clone, Deserialize, Serialize, Ord, PartialOrd, Copy)]
+#[derive(Default, Clone, Deserialize, Serialize)]
 pub struct Hash<T> {
     inner: [u8; HASH_SIZE],
     _x: PhantomData<T>,
+}
+
+impl<T> std::hash::Hash for Hash<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.inner.hash(state);
+    }
+}
+
+impl<T> PartialEq for Hash<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.inner == other.inner
+    }
+}
+
+impl<T> Eq for Hash<T> {}
+
+impl<T> PartialOrd for Hash<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.inner.partial_cmp(&other.inner)
+    }
 }
 
 impl<T> Hash<T> {
