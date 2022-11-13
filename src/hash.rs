@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 
 const HASH_SIZE: usize = 32;
 
-#[derive(Hash, PartialEq, Default, Eq, Clone, Deserialize, Serialize, Ord, PartialOrd)]
+#[derive(Hash, PartialEq, Default, Eq, Clone, Deserialize, Serialize, Ord, PartialOrd, Copy)]
 pub struct Hash<T> {
     inner: [u8; HASH_SIZE],
     _x: PhantomData<T>,
@@ -29,8 +29,6 @@ impl<T> Hash<T> {
     pub fn to_vec(&self) -> Vec<u8> {
         self.inner.to_vec()
     }
-
-
 }
 
 impl<T> AsRef<[u8]> for Hash<T> {
