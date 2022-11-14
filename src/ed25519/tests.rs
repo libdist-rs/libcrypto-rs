@@ -11,7 +11,7 @@ fn eq_keypairs(kp1: &Keypair, kp2: &Keypair) -> bool {
 fn ed25519_keypair_encode_decode() {
     fn prop() -> anyhow::Result<bool> {
         let kp1 = Keypair::generate()?;
-        let mut kp1_enc = bincode::serialize(&kp1)?;
+        let kp1_enc = bincode::serialize(&kp1)?;
         let kp2 = bincode::deserialize(&kp1_enc)?;
         Ok(eq_keypairs(&kp1, &kp2))
     }

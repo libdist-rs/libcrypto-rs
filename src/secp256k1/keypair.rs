@@ -38,6 +38,18 @@ impl Keypair {
     pub fn secret(&self) -> &SecretKey {
         &self.secret
     }
+
+    /// Serialize the keypair
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.secret.to_bytes().to_vec()
+    }
+
+    /// Deserialize the keypair
+    pub fn from_bytes(data: &mut [u8]) -> anyhow::Result<Self> {
+        let sk = SecretKey::from_bytes(data)?;
+        let kpair = Keypair::from(sk);
+        Ok(kpair)
+    }
 }
 
 impl fmt::Debug for Keypair {
