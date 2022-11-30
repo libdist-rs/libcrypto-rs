@@ -4,10 +4,20 @@ use serde::{Serialize, Deserialize};
 
 const HASH_SIZE: usize = 32;
 
-#[derive(Default, Clone, Deserialize, Serialize)]
+#[derive(Default, Deserialize, Serialize)]
 pub struct Hash<T> {
     inner: [u8; HASH_SIZE],
     _x: PhantomData<T>,
+}
+
+/// Hash<T> is cloneable even if T is not cloneable
+impl<T> Clone for Hash<T> {
+    fn clone(&self) -> Self {
+        Self { 
+            inner: self.inner.clone(), 
+            _x: PhantomData 
+        }
+    }
 }
 
 impl<T> std::hash::Hash for Hash<T> {
