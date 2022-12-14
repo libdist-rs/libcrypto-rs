@@ -1,9 +1,11 @@
 use std::fmt;
+
 use libsecp256k1::{Message, Signature};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest as ShaDigestTrait, Sha256};
 
 /// A Secp256k1 public key.
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct PublicKey(pub(crate) libsecp256k1::PublicKey);
 
 impl fmt::Debug for PublicKey {
@@ -31,20 +33,18 @@ impl PublicKey {
 
     /// Encode the public key in compressed form, i.e. with one coordinate
     /// represented by a single bit.
-    pub fn encode(&self) -> [u8; 33] {
-        self.0.serialize_compressed()
-    }
+    pub fn encode(&self) -> [u8; 33] { self.0.serialize_compressed() }
 
     /// Encode the public key in uncompressed form.
-    pub fn encode_uncompressed(&self) -> [u8; 65] {
-        self.0.serialize()
-    }
+    pub fn encode_uncompressed(&self) -> [u8; 65] { self.0.serialize() }
 
     /// Decode a public key from a byte slice in the the format produced
     /// by `encode`.
     pub fn decode(k: &[u8]) -> anyhow::Result<PublicKey> {
-        let pk = libsecp256k1::PublicKey::parse_slice(k, Some(libsecp256k1::PublicKeyFormat::Compressed))?;
+        let pk = libsecp256k1::PublicKey::parse_slice(
+            k,
+            Some(libsecp256k1::PublicKeyFormat::Compressed),
+        )?;
         Ok(PublicKey(pk))
     }
 }
-

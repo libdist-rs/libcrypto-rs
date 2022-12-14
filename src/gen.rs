@@ -18,14 +18,14 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#[cfg(feature = "rsa")]
-use crate::rsa;
-
-#[cfg(feature = "secp256k1")]
-use crate::secp256k1;
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "ed25519")]
 use crate::ed25519;
+#[cfg(feature = "rsa")]
+use crate::rsa;
+#[cfg(feature = "secp256k1")]
+use crate::secp256k1;
 
 /// Identity keypair of a node.
 ///
@@ -44,7 +44,7 @@ use crate::ed25519;
 /// let keypair = Keypair::rsa_from_pkcs8(&mut bytes);
 /// ```
 ///
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Keypair {
     /// An Ed25519 keypair.
     #[cfg(feature = "ed25519")]
@@ -56,10 +56,10 @@ pub enum Keypair {
 
     /// A Secp256k1 keypair.
     #[cfg(feature = "secp256k1")]
-    Secp256k1(secp256k1::Keypair)
+    Secp256k1(secp256k1::Keypair),
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SecretKey {
     /// An Ed25519 keypair.
     #[cfg(feature = "ed25519")]
@@ -69,7 +69,7 @@ pub enum SecretKey {
     Rsa(rsa::SecretKey),
     /// A Secp256k1 keypair.
     #[cfg(feature = "secp256k1")]
-    Secp256k1(secp256k1::SecretKey)
+    Secp256k1(secp256k1::SecretKey),
 }
 
 impl SecretKey {
@@ -82,7 +82,7 @@ impl SecretKey {
             #[cfg(feature = "rsa")]
             SecretKey::Rsa(ref key) => key.sign(msg),
             #[cfg(feature = "secp256k1")]
-            SecretKey::Secp256k1(ref pair) => pair.sign(msg)
+            SecretKey::Secp256k1(ref pair) => pair.sign(msg),
         }
     }
 }
@@ -97,9 +97,7 @@ impl Keypair {
 
     /// Generate a new Secp256k1 keypair.
     #[cfg(feature = "secp256k1")]
-    pub fn generate_secp256k1() -> Keypair {
-        Keypair::Secp256k1(secp256k1::Keypair::generate())
-    }
+    pub fn generate_secp256k1() -> Keypair { Keypair::Secp256k1(secp256k1::Keypair::generate()) }
 
     /// Decode an keypair from a DER-encoded secret key in PKCS#8 PrivateKeyInfo
     /// format (i.e. unencrypted) as defined in [RFC5208].
@@ -117,7 +115,7 @@ impl Keypair {
             #[cfg(feature = "rsa")]
             Self::Rsa(kpair) => SecretKey::Rsa(kpair.secret()),
             #[cfg(feature = "secp256k1")]
-            Self::Secp256k1(kpair) => SecretKey::Secp256k1(kpair.secret().clone())
+            Self::Secp256k1(kpair) => SecretKey::Secp256k1(kpair.secret().clone()),
         }
     }
 
@@ -146,7 +144,7 @@ impl Keypair {
 }
 
 /// The public key of a node's identity keypair.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PublicKey {
     /// A public Ed25519 key.
     #[cfg(feature = "ed25519")]
@@ -156,7 +154,7 @@ pub enum PublicKey {
     Rsa(rsa::PublicKey),
     /// A public Secp256k1 key.
     #[cfg(feature = "secp256k1")]
-    Secp256k1(secp256k1::PublicKey)
+    Secp256k1(secp256k1::PublicKey),
 }
 
 impl PublicKey {
@@ -172,8 +170,7 @@ impl PublicKey {
             #[cfg(feature = "rsa")]
             Rsa(pk) => pk.verify(msg, sig),
             #[cfg(feature = "secp256k1")]
-            Secp256k1(pk) => pk.verify(msg, sig)
+            Secp256k1(pk) => pk.verify(msg, sig),
         }
     }
 }
-

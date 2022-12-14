@@ -1,7 +1,9 @@
 use std::fmt;
-use asn1_der::typed::{Sequence, DerDecodable};
+
+use asn1_der::typed::{DerDecodable, Sequence};
 use libsecp256k1::Message;
 use rand::RngCore;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest as ShaDigestTrait, Sha256};
 
 /// A Secp256k1 secret key.
@@ -9,8 +11,29 @@ use sha2::{Digest as ShaDigestTrait, Sha256};
 pub struct SecretKey(pub(crate) libsecp256k1::SecretKey);
 
 impl fmt::Debug for SecretKey {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "SecretKey")
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "SecretKey") }
+}
+
+#[derive(Serialize, Deserialize)]
+struct Serialized([u8; 32]);
+
+impl Serialize for SecretKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        Serialized(self.0.serialize()).serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for SecretKey {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let data = Serialized::deserialize(deserializer)?;
+        let inner_sk = libsecp256k1::SecretKey::parse(&data.0).map_err(serde::de::Error::custom)?;
+        Ok(Self(inner_sk))
     }
 }
 
@@ -24,7 +47,7 @@ impl SecretKey {
         loop {
             r.fill_bytes(&mut b);
             if let Ok(k) = libsecp256k1::SecretKey::parse(&b) {
-                return SecretKey(k)
+                return SecretKey(k);
             }
         }
     }
@@ -61,9 +84,7 @@ impl SecretKey {
     }
 
     /// Returns the raw bytes of the secret key.
-    pub fn to_bytes(&self) -> [u8; 32] {
-        self.0.serialize()
-    }
+    pub fn to_bytes(&self) -> [u8; 32] { self.0.serialize() }
 
     /// Sign a raw message of length 256 bits with this secret key, produces a DER-encoded
     /// ECDSA signature.
@@ -72,4 +93,3 @@ impl SecretKey {
         Ok(libsecp256k1::sign(&m, &self.0).0.serialize_der().as_ref().into())
     }
 }
-

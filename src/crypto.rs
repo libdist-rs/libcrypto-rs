@@ -1,5 +1,6 @@
-use serde::{Serialize, Deserialize};
 use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum Algorithm {

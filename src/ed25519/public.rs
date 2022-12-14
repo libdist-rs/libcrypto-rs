@@ -1,6 +1,7 @@
 use core::fmt;
+
 use ed25519_dalek::Verifier;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// An Ed25519 public key.
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
@@ -19,9 +20,6 @@ impl fmt::Debug for PublicKey {
 impl PublicKey {
     /// Verify the Ed25519 signature on a message using the public key.
     pub fn verify(&self, msg: &[u8], sig: &[u8]) -> bool {
-        ed25519_dalek::Signature::try_from(sig)
-            .and_then(|s| 
-                self.0.verify(msg, &s)
-            ).is_ok()
+        ed25519_dalek::Signature::try_from(sig).and_then(|s| self.0.verify(msg, &s)).is_ok()
     }
 }

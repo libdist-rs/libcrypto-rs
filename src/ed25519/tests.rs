@@ -1,10 +1,11 @@
 use std::error::Error;
-use crate::ed25519::Keypair;
+
 use quickcheck::*;
 
+use crate::ed25519::Keypair;
+
 fn eq_keypairs(kp1: &Keypair, kp2: &Keypair) -> bool {
-    kp1.public() == kp2.public() &&
-        kp1.secret().sk.as_bytes() == kp2.secret().sk.as_bytes()
+    kp1.public() == kp2.public() && kp1.secret().sk.as_bytes() == kp2.secret().sk.as_bytes()
 }
 
 #[test]

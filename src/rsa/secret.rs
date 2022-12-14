@@ -1,5 +1,8 @@
 use std::sync::Arc;
-use ring::{signature::{RsaKeyPair, RSA_PKCS1_SHA256}, rand::SystemRandom};
+
+use ring::rand::SystemRandom;
+use ring::signature::{RsaKeyPair, RSA_PKCS1_SHA256};
+
 use crate::SigningError;
 
 #[derive(Debug, Clone)]
@@ -12,8 +15,7 @@ impl SecretKey {
         let rng = SystemRandom::new();
         match self.0.sign(&RSA_PKCS1_SHA256, &rng, &data, &mut signature) {
             Ok(()) => Ok(signature),
-            Err(e) => Err(SigningError::new("RSA").source(e))
+            Err(e) => Err(SigningError::new("RSA").source(e)),
         }
     }
 }
-

@@ -1,12 +1,14 @@
 use std::fmt;
 
-use super::{SecretKey, PublicKey};
+use serde::{Deserialize, Serialize};
+
+use super::{PublicKey, SecretKey};
 
 /// A Secp256k1 keypair.
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Keypair {
     secret: SecretKey,
-    public: PublicKey
+    public: PublicKey,
 }
 
 impl Keypair {
@@ -25,24 +27,16 @@ impl Keypair {
 
 impl Keypair {
     /// Generate a new sec256k1 `Keypair`.
-    pub fn generate() -> Keypair {
-        Keypair::from(SecretKey::generate())
-    }
+    pub fn generate() -> Keypair { Keypair::from(SecretKey::generate()) }
 
     /// Get the public key of this keypair.
-    pub fn public(&self) -> &PublicKey {
-        &self.public
-    }
+    pub fn public(&self) -> &PublicKey { &self.public }
 
     /// Get the secret key of this keypair.
-    pub fn secret(&self) -> &SecretKey {
-        &self.secret
-    }
+    pub fn secret(&self) -> &SecretKey { &self.secret }
 
     /// Serialize the keypair
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.secret.to_bytes().to_vec()
-    }
+    pub fn to_bytes(&self) -> Vec<u8> { self.secret.to_bytes().to_vec() }
 
     /// Deserialize the keypair
     pub fn from_bytes(data: &mut [u8]) -> anyhow::Result<Self> {
@@ -68,8 +62,5 @@ impl From<SecretKey> for Keypair {
 
 /// Demote a Secp256k1 keypair into a secret key.
 impl From<Keypair> for SecretKey {
-    fn from(kp: Keypair) -> SecretKey {
-        kp.secret
-    }
+    fn from(kp: Keypair) -> SecretKey { kp.secret }
 }
-
