@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{PublicKey, SecretKey};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 /// An Ed25519 keypair.
 pub struct Keypair {
     sk: SecretKey,

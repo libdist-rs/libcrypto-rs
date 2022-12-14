@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, hash::Hash};
 
 use asn1_der::typed::{DerDecodable, Sequence};
 use libsecp256k1::Message;
@@ -7,11 +7,29 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest as ShaDigestTrait, Sha256};
 
 /// A Secp256k1 secret key.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct SecretKey(pub(crate) libsecp256k1::SecretKey);
 
 impl fmt::Debug for SecretKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "SecretKey") }
+}
+
+impl Hash for SecretKey {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.serialize().hash(state);
+    }
+}
+
+impl PartialOrd for SecretKey {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.0.serialize().partial_cmp(&other.0.serialize())
+    }
+}
+
+impl Ord for SecretKey {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.serialize().cmp(&other.0.serialize())
+    }
 }
 
 #[derive(Serialize, Deserialize)]

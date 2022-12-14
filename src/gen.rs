@@ -44,7 +44,7 @@ use crate::secp256k1;
 /// let keypair = Keypair::rsa_from_pkcs8(&mut bytes);
 /// ```
 ///
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Keypair {
     /// An Ed25519 keypair.
     #[cfg(feature = "ed25519")]
@@ -59,7 +59,7 @@ pub enum Keypair {
     Secp256k1(secp256k1::Keypair),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum SecretKey {
     /// An Ed25519 keypair.
     #[cfg(feature = "ed25519")]

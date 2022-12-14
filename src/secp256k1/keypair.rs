@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::{PublicKey, SecretKey};
 
 /// A Secp256k1 keypair.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Keypair {
     secret: SecretKey,
     public: PublicKey,

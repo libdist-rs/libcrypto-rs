@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, hash::Hash};
 
 use libsecp256k1::{Message, Signature};
 use serde::{Deserialize, Serialize};
@@ -15,6 +15,24 @@ impl fmt::Debug for PublicKey {
             write!(f, "{:x}", byte)?;
         }
         Ok(())
+    }
+}
+
+impl Hash for PublicKey {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.serialize().hash(state);
+    }
+}
+
+impl PartialOrd for PublicKey {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.0.serialize().partial_cmp(&other.0.serialize())
+    }
+}
+
+impl Ord for PublicKey {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.serialize().cmp(&other.0.serialize())
     }
 }
 
