@@ -59,7 +59,7 @@ pub enum Keypair {
     Secp256k1(secp256k1::Keypair),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum SecretKey {
     /// An Ed25519 keypair.
     #[cfg(feature = "ed25519")]
@@ -144,7 +144,7 @@ impl Keypair {
 }
 
 /// The public key of a node's identity keypair.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Hash, PartialOrd, Ord)]
 pub enum PublicKey {
     /// A public Ed25519 key.
     #[cfg(feature = "ed25519")]
