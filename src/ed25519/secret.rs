@@ -21,11 +21,11 @@ impl Eq for SecretKey {}
 
 impl PartialOrd for SecretKey {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match self.sk.as_bytes().partial_cmp(&other.sk.as_bytes()) {
+        match self.sk.as_bytes().partial_cmp(other.sk.as_bytes()) {
             Some(core::cmp::Ordering::Equal) => {}
             ord => return ord,
         }
-        self.pk.as_bytes().partial_cmp(&other.pk.as_bytes())
+        self.pk.as_bytes().partial_cmp(other.pk.as_bytes())
     }
 }
 
@@ -59,7 +59,7 @@ impl Clone for SecretKey {
         let sk_bytes = bytes.as_mut();
         let sk = ed25519_dalek::SecretKey::from_bytes(&*sk_bytes).unwrap();
         let pk = ed25519_dalek::PublicKey::from(&sk);
-        Self { sk: sk, pk: pk }
+        Self { sk, pk }
     }
 }
 
@@ -75,7 +75,7 @@ impl SecretKey {
         let sk_bytes = bytes.as_mut();
         let sk = ed25519_dalek::SecretKey::from_bytes(&*sk_bytes)?;
         let pk = ed25519_dalek::PublicKey::from(&sk);
-        Ok(Self { sk: sk, pk: pk })
+        Ok(Self { sk, pk })
     }
 
     /// Sign a message using the private key of this keypair.

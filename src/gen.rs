@@ -48,7 +48,7 @@ use crate::secp256k1;
 pub enum Keypair {
     /// An Ed25519 keypair.
     #[cfg(feature = "ed25519")]
-    Ed25519(ed25519::Keypair),
+    Ed25519(Box<ed25519::Keypair>),
 
     /// An RSA keypair.
     #[cfg(feature = "rsa")]
@@ -92,7 +92,7 @@ impl Keypair {
     #[cfg(feature = "ed25519")]
     pub fn generate_ed25519() -> anyhow::Result<Keypair> {
         let kp = ed25519::Keypair::generate()?;
-        Ok(Keypair::Ed25519(kp))
+        Ok(Keypair::Ed25519(Box::new(kp)))
     }
 
     /// Generate a new Secp256k1 keypair.

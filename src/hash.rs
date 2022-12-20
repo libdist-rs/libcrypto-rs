@@ -15,7 +15,7 @@ pub struct Hash<T> {
 
 /// Hash<T> is cloneable even if T is not cloneable
 impl<T> Clone for Hash<T> {
-    fn clone(&self) -> Self { Self { inner: self.inner.clone(), _x: PhantomData } }
+    fn clone(&self) -> Self { Self { inner: self.inner, _x: PhantomData } }
 }
 
 impl<T> std::hash::Hash for Hash<T> {
@@ -39,12 +39,18 @@ impl<T> Ord for Hash<T> {
 }
 
 impl<T> Hash<T> {
-    pub const EMPTY_HASH: Hash<T> = Hash::<T> { inner: [0 as u8; HASH_SIZE], _x: PhantomData };
+    pub const EMPTY_HASH: Hash<T> = Hash::<T> { 
+        inner: [0; HASH_SIZE], 
+        _x: PhantomData,
+    };
 
     /// Creates a hash from serialized data
     pub fn do_hash(serialized: &[u8]) -> Self {
         let hash = Sha256::digest(serialized);
-        return Self { inner: hash.into(), _x: PhantomData };
+        Self { 
+            inner: hash.into(), 
+            _x: PhantomData, 
+        }
     }
 
     /// Creates a hash vector
@@ -69,7 +75,7 @@ where
     /// Returns the hash of the bincode serialized object
     pub fn ser_and_hash(data: &T) -> Self {
         let serialized_bytes = bincode::serialize(data).unwrap();
-        return Self::do_hash(&serialized_bytes);
+        Self::do_hash(&serialized_bytes)
     }
 }
 

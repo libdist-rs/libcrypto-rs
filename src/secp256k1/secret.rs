@@ -14,6 +14,7 @@ impl fmt::Debug for SecretKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "SecretKey") }
 }
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for SecretKey {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.0.serialize().hash(state);
