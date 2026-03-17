@@ -1,6 +1,6 @@
 [package]
 name = "libcrypto"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["hermitsage <dth.bht@gmail.com>"]
 edition = "2021"
 
@@ -13,16 +13,14 @@ bincode = "1"
 libsecp256k1 = { version = "0.7" }
 asn1_der = "0.7"
 rand = "^0.8"
-lazy_static = "1"
-zeroize = "1"
 ring = { version = "0.16", features = ["alloc", "std"], default-features = false }
 openssl = "0"
 anyhow = "1"
 base64 = "0"
 
 [dependencies.ed25519-dalek]
-version = "1"
-features = ["serde"]
+version = "2"
+features = ["serde", "rand_core"]
 
 [dev-dependencies]
 quickcheck = "1"

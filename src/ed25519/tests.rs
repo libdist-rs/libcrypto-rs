@@ -5,7 +5,7 @@ use quickcheck::*;
 use crate::ed25519::Keypair;
 
 fn eq_keypairs(kp1: &Keypair, kp2: &Keypair) -> bool {
-    kp1.public() == kp2.public() && kp1.secret().sk.as_bytes() == kp2.secret().sk.as_bytes()
+    kp1.public() == kp2.public() && kp1.secret().signing_key.to_bytes() == kp2.secret().signing_key.to_bytes()
 }
 
 #[test]

@@ -75,6 +75,7 @@ pub enum SecretKey {
 impl SecretKey {
     /// Sign a message using the private key of this keypair, producing
     /// a signature that can be verified using the corresponding public key.
+    #[inline]
     pub fn sign(&self, msg: &[u8]) -> anyhow::Result<Vec<u8>> {
         match self {
             #[cfg(feature = "ed25519")]
@@ -162,6 +163,7 @@ impl PublicKey {
     /// that the signature has been produced by the corresponding
     /// private key (authenticity), and that the message has not been
     /// tampered with (integrity).
+    #[inline]
     pub fn verify(&self, msg: &[u8], sig: &[u8]) -> bool {
         use PublicKey::*;
         match self {

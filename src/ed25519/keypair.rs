@@ -21,7 +21,7 @@ impl Keypair {
     }
 
     /// Get the public key of this keypair.
-    pub fn public(&self) -> PublicKey { PublicKey(self.pk.0) }
+    pub fn public(&self) -> PublicKey { PublicKey(self.sk.signing_key.verifying_key()) }
 
     /// Get the secret key of this keypair.
     pub fn secret(&self) -> SecretKey { self.sk.clone() }
@@ -35,12 +35,13 @@ impl fmt::Debug for Keypair {
 
 /// Demote an Ed25519 keypair to a secret key.
 impl From<Keypair> for SecretKey {
-    fn from(kp: Keypair) -> SecretKey { SecretKey { sk: kp.sk.sk, pk: kp.pk.0 } }
+    fn from(kp: Keypair) -> SecretKey { kp.sk }
 }
 
 /// Promote an Ed25519 secret key into a keypair.
 impl From<SecretKey> for Keypair {
     fn from(sk: SecretKey) -> Keypair {
-        Self { sk: SecretKey { sk: sk.sk, pk: sk.pk }, pk: PublicKey(sk.pk) }
+        let pk = PublicKey(sk.signing_key.verifying_key());
+        Self { sk, pk }
     }
 }

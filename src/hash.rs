@@ -1,9 +1,27 @@
 use std::array::TryFromSliceError;
 use std::fmt::{self, Debug, Display};
+use std::io::Write;
 use std::marker::PhantomData;
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+
+/// A writer that feeds bytes directly into a SHA256 hasher,
+/// avoiding intermediate allocations when used with bincode::serialize_into.
+struct HashWriter(Sha256);
+
+impl Write for HashWriter {
+    #[inline]
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.0.update(buf);
+        Ok(buf.len())
+    }
+
+    #[inline]
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
 
 const HASH_SIZE: usize = 32;
 
@@ -45,11 +63,12 @@ impl<T> Hash<T> {
     };
 
     /// Creates a hash from serialized data
+    #[inline]
     pub fn do_hash(serialized: &[u8]) -> Self {
         let hash = Sha256::digest(serialized);
-        Self { 
-            inner: hash.into(), 
-            _x: PhantomData, 
+        Self {
+            inner: hash.into(),
+            _x: PhantomData,
         }
     }
 
@@ -58,6 +77,7 @@ impl<T> Hash<T> {
 }
 
 impl<T> AsRef<[u8]> for Hash<T> {
+    #[inline]
     fn as_ref(&self) -> &[u8] { &self.inner }
 }
 
@@ -72,10 +92,18 @@ impl<T> Hash<T>
 where
     T: Serialize,
 {
-    /// Returns the hash of the bincode serialized object
+    /// Returns the hash of the bincode serialized object.
+    /// Serializes directly into the SHA256 hasher to avoid allocating
+    /// an intermediate buffer.
+    #[inline]
     pub fn ser_and_hash(data: &T) -> Self {
-        let serialized_bytes = bincode::serialize(data).unwrap();
-        Self::do_hash(&serialized_bytes)
+        let mut writer = HashWriter(Sha256::new());
+        bincode::serialize_into(&mut writer, data).expect("Serialization error");
+        let hash = writer.0.finalize();
+        Self {
+            inner: hash.into(),
+            _x: PhantomData,
+        }
     }
 }
 

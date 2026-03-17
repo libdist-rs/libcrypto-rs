@@ -1,19 +1,17 @@
 use core::fmt;
 
-use rand::RngCore;
+use ed25519_dalek::Signer;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 /// An Ed25519 secret key.
 pub struct SecretKey {
-    pub(crate) sk: ed25519_dalek::SecretKey,
-    pub(crate) pk: ed25519_dalek::PublicKey,
+    pub(crate) signing_key: ed25519_dalek::SigningKey,
 }
 
 impl PartialEq for SecretKey {
     fn eq(&self, other: &Self) -> bool {
-        self.sk.as_bytes() == other.sk.as_bytes() && 
-        self.pk == other.pk
+        self.signing_key.to_bytes() == other.signing_key.to_bytes()
     }
 }
 
@@ -21,31 +19,19 @@ impl Eq for SecretKey {}
 
 impl PartialOrd for SecretKey {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match self.sk.as_bytes().partial_cmp(other.sk.as_bytes()) {
-            Some(core::cmp::Ordering::Equal) => {}
-            ord => return ord,
-        }
-        self.pk.as_bytes().partial_cmp(other.pk.as_bytes())
+        self.signing_key.to_bytes().partial_cmp(&other.signing_key.to_bytes())
     }
 }
 
 impl Ord for SecretKey {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        let res = self.sk.as_bytes().cmp(other.sk.as_bytes());
-        match res {
-            std::cmp::Ordering::Less | std::cmp::Ordering::Greater => {
-                return res;
-            },
-            _ => (),
-        };
-        self.pk.as_bytes().cmp(other.pk.as_bytes())
+        self.signing_key.to_bytes().cmp(&other.signing_key.to_bytes())
     }
 }
 
 impl std::hash::Hash for SecretKey {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.sk.as_bytes().hash(state);
-        self.pk.as_bytes().hash(state);
+        self.signing_key.to_bytes().hash(state);
     }
 }
 
@@ -55,11 +41,9 @@ impl SecretKey {
 
 impl Clone for SecretKey {
     fn clone(&self) -> SecretKey {
-        let mut bytes = self.sk.to_bytes();
-        let sk_bytes = bytes.as_mut();
-        let sk = ed25519_dalek::SecretKey::from_bytes(&*sk_bytes).unwrap();
-        let pk = ed25519_dalek::PublicKey::from(&sk);
-        Self { sk, pk }
+        let bytes = self.signing_key.to_bytes();
+        let signing_key = ed25519_dalek::SigningKey::from_bytes(&bytes);
+        Self { signing_key }
     }
 }
 
@@ -70,17 +54,13 @@ impl fmt::Debug for SecretKey {
 impl SecretKey {
     /// Generate a new Ed25519 secret key.
     pub fn generate() -> anyhow::Result<SecretKey> {
-        let mut bytes = [0u8; Self::SIZE];
-        rand::thread_rng().fill_bytes(&mut bytes);
-        let sk_bytes = bytes.as_mut();
-        let sk = ed25519_dalek::SecretKey::from_bytes(&*sk_bytes)?;
-        let pk = ed25519_dalek::PublicKey::from(&sk);
-        Ok(Self { sk, pk })
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::thread_rng());
+        Ok(Self { signing_key })
     }
 
     /// Sign a message using the private key of this keypair.
+    #[inline]
     pub fn sign(&self, msg: &[u8]) -> anyhow::Result<Vec<u8>> {
-        let expanded: ed25519_dalek::ExpandedSecretKey = (&self.sk).into();
-        Ok(expanded.sign(msg, &self.pk).to_bytes().to_vec())
+        Ok(self.signing_key.sign(msg).to_bytes().to_vec())
     }
 }
