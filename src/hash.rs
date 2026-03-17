@@ -10,7 +10,7 @@ use sha2::{Digest, Sha256};
 /// to SHA256 in large chunks. This avoids both heap allocation (unlike
 /// bincode::serialize → Vec) and per-field update overhead (unlike
 /// unbuffered writes to Sha256::update).
-const HASH_BUF_SIZE: usize = 8192;
+const HASH_BUF_SIZE: usize = 512;
 
 struct BufHashWriter {
     hasher: Sha256,
