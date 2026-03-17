@@ -6,19 +6,67 @@ use std::marker::PhantomData;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-/// A writer that feeds bytes directly into a SHA256 hasher,
-/// avoiding intermediate allocations when used with bincode::serialize_into.
-struct HashWriter(Sha256);
+/// A buffered writer that accumulates bytes on the stack before flushing
+/// to SHA256 in large chunks. This avoids both heap allocation (unlike
+/// bincode::serialize → Vec) and per-field update overhead (unlike
+/// unbuffered writes to Sha256::update).
+const HASH_BUF_SIZE: usize = 8192;
 
-impl Write for HashWriter {
+struct BufHashWriter {
+    hasher: Sha256,
+    buf: [u8; HASH_BUF_SIZE],
+    pos: usize,
+}
+
+impl BufHashWriter {
+    #[inline]
+    fn new() -> Self {
+        Self {
+            hasher: Sha256::new(),
+            buf: [0u8; HASH_BUF_SIZE],
+            pos: 0,
+        }
+    }
+
+    #[inline]
+    fn flush_buf(&mut self) {
+        if self.pos > 0 {
+            self.hasher.update(&self.buf[..self.pos]);
+            self.pos = 0;
+        }
+    }
+
+    #[inline]
+    fn finalize(mut self) -> [u8; 32] {
+        self.flush_buf();
+        self.hasher.finalize().into()
+    }
+}
+
+impl Write for BufHashWriter {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.0.update(buf);
-        Ok(buf.len())
+        let len = buf.len();
+        if self.pos + len <= HASH_BUF_SIZE {
+            // Fast path: fits in buffer
+            self.buf[self.pos..self.pos + len].copy_from_slice(buf);
+            self.pos += len;
+        } else if len >= HASH_BUF_SIZE {
+            // Large write: flush buffer, then pass directly to hasher
+            self.flush_buf();
+            self.hasher.update(buf);
+        } else {
+            // Partial fit: flush buffer, then buffer the new data
+            self.flush_buf();
+            self.buf[..len].copy_from_slice(buf);
+            self.pos = len;
+        }
+        Ok(len)
     }
 
     #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
+        self.flush_buf();
         Ok(())
     }
 }
@@ -93,15 +141,14 @@ where
     T: Serialize,
 {
     /// Returns the hash of the bincode serialized object.
-    /// Serializes directly into the SHA256 hasher to avoid allocating
-    /// an intermediate buffer.
+    /// Uses a stack-buffered writer to avoid heap allocation while
+    /// still giving SHA256 large contiguous chunks to process.
     #[inline]
     pub fn ser_and_hash(data: &T) -> Self {
-        let mut writer = HashWriter(Sha256::new());
+        let mut writer = BufHashWriter::new();
         bincode::serialize_into(&mut writer, data).expect("Serialization error");
-        let hash = writer.0.finalize();
         Self {
-            inner: hash.into(),
+            inner: writer.finalize(),
             _x: PhantomData,
         }
     }
