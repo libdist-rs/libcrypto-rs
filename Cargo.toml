@@ -1,6 +1,6 @@
 [package]
 name = "libcrypto"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["hermitsage <dth.bht@gmail.com>"]
 edition = "2021"
 
