@@ -175,4 +175,26 @@ impl PublicKey {
             Secp256k1(pk) => pk.verify(msg, sig),
         }
     }
+
+    /// Batch-verify multiple (message, signature, public_key) tuples.
+    /// All keys must be Ed25519. Returns false if any key is not Ed25519.
+    #[cfg(feature = "ed25519")]
+    pub fn verify_batch(
+        messages: &[&[u8]],
+        signatures: &[&[u8]],
+        public_keys: &[&PublicKey],
+    ) -> bool {
+        let ed_keys: Vec<&ed25519::PublicKey> = match public_keys
+            .iter()
+            .map(|pk| match pk {
+                PublicKey::Ed25519(k) => Some(k),
+                #[allow(unreachable_patterns)]
+                _ => None,
+            })
+            .collect::<Option<Vec<_>>>() {
+                Some(keys) => keys,
+                None => return false,
+            };
+        ed25519::PublicKey::verify_batch(messages, signatures, &ed_keys)
+    }
 }
