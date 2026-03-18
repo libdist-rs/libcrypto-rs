@@ -42,4 +42,31 @@ impl PublicKey {
     pub fn verify(&self, msg: &[u8], sig: &[u8]) -> bool {
         ed25519_dalek::Signature::try_from(sig).and_then(|s| self.0.verify(msg, &s)).is_ok()
     }
+
+    /// Batch-verify multiple (message, signature, public_key) tuples using
+    /// a single multi-scalar multiplication. Faster than individual verification
+    /// for batches of ~4+ signatures.
+    ///
+    /// Returns true if ALL signatures are valid.
+    pub fn verify_batch(
+        messages: &[&[u8]],
+        signatures: &[&[u8]],
+        public_keys: &[&PublicKey],
+    ) -> bool {
+        if messages.len() != signatures.len() || messages.len() != public_keys.len() {
+            return false;
+        }
+        let sigs: Vec<ed25519_dalek::Signature> = match signatures
+            .iter()
+            .map(|s| ed25519_dalek::Signature::try_from(*s))
+            .collect::<Result<Vec<_>, _>>() {
+                Ok(sigs) => sigs,
+                Err(_) => return false,
+            };
+        let vks: Vec<ed25519_dalek::VerifyingKey> = public_keys
+            .iter()
+            .map(|pk| pk.0)
+            .collect();
+        ed25519_dalek::verify_batch(messages, &sigs, &vks).is_ok()
+    }
 }

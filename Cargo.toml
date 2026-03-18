@@ -1,6 +1,6 @@
 [package]
 name = "libcrypto"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["hermitsage <dth.bht@gmail.com>"]
 edition = "2021"
 
@@ -20,7 +20,7 @@ base64 = "0"
 
 [dependencies.ed25519-dalek]
 version = "2"
-features = ["serde", "rand_core"]
+features = ["serde", "rand_core", "batch"]
 
 [dev-dependencies]
 quickcheck = "1"
